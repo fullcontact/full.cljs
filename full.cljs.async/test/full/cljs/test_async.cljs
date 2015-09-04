@@ -1,7 +1,7 @@
 (ns full.cljs.test-async
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cemerick.cljs.test :as t :refer-macros [deftest is done]]
-            [full.cljs.async :refer [pmap>>] :refer-macros [go-try <? <<? <?*]]
+            [full.cljs.async :refer [pmap>> singleton-chan] :refer-macros [go-try <? <<? <?*]]
             [cljs.core.async :refer [chan take! >! close!]]))
 
 
@@ -42,3 +42,15 @@
                 (set))
            #{2 3}))
     (done)))
+
+(deftest ^:async test-singleton-chan
+  (go
+     (let [ch (singleton-chan)]
+       (>! ch 1)
+       (is (= [(<! ch) (<! ch)]
+              [1 1]))
+       (>! ch 2)
+       (is (= [(<! ch) (<! ch) (<! ch)]
+              ; first get will still return old value unfortunately
+              [1 2 2]))
+       (done))))

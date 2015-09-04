@@ -1,6 +1,7 @@
 (ns full.cljs.async
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [chan close! >! <!]]))
+  (:require [cljs.core.async :refer [chan close! >! <! put! take!]]
+            [cljs.core.async.impl.protocols :as asyncimpl]))
 
 (defn throw-if-throwable
   "Helper method that checks if x is JavaScript Error. If it is, throws it,
@@ -58,3 +59,32 @@
           (>! result acc)
           (close! result))))
     result))
+
+(deftype SingletonChannel [out-ch in-ch]
+  asyncimpl/WritePort
+  (put! [_ val handler]
+    (asyncimpl/put! in-ch val handler))
+  asyncimpl/ReadPort
+  (take! [_ handler]
+    (asyncimpl/take! out-ch handler)))
+
+(defn singleton-chan
+  "Creates a channel that will wait until the first value is put onto it and
+  then on each subsequent take will return the same value. Accepts repeated
+  put's in which case the singletone value will be replaced for further gets."
+  []
+  (let [value- (atom nil)
+        out-ch (chan)
+        in-ch (chan)]
+    (go
+      ; wait for first value to arrive
+      (reset! value- (<! in-ch))
+      ; start listing for updates
+      (go
+        (loop []
+          (reset! value- (<! in-ch))))
+      ; publish the value repeatedly to out-ch
+      (loop []
+        (>! out-ch @value-)
+        (recur)))
+    (SingletonChannel. out-ch in-ch)))
