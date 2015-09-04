@@ -11,4 +11,5 @@
 
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.48"]
-                 [cljs-ajax "0.3.13"]])
+                 [cljs-ajax "0.3.13"]
+                 [camel-snake-kebab "0.3.2"]])
