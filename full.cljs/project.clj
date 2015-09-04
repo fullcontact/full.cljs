@@ -1,4 +1,4 @@
-(defproject fullcontact/full.cljs "0.1.3"
+(defproject fullcontact/full.cljs "0.1.4-SNAPSHOT"
   :description "ClojureScript sugar - logging, browser API's etc."
 
   :url "https://github.com/fullcontact/full.cljs"
