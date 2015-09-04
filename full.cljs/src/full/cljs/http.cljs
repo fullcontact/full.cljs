@@ -1,9 +1,9 @@
 (ns full.cljs.http
   (:require [cljs.core.async :refer [chan put! close!]]
+            [camel-snake-kebab.core :refer [->camelCase ->kebab-case-keyword]]
             [ajax.core :refer [ajax-request
-                               raw-response-format
-                               json-request-format
-                               json-response-format]]
+                               raw-response-format]]
+            [full.cljs.json :refer [read-json write-json]]
             [full.cljs.log :as log]))
 
 (defn req>
@@ -25,9 +25,23 @@
     ch))
 
 
+;;; JSON HANDLING
+
+
+(defn json-request-format
+  [& {:keys [json-key-fn] :or {json-key-fn ->camelCase}}]
+  {:write #(write-json % :json-key-fn json-key-fn)
+   :content-type "application/json"})
+
+(defn json-response-format
+  [& {:keys [json-key-fn] :or {json-key-fn ->kebab-case-keyword}}]
+  {:read #(read-json (.getResponseText %) :json-key-fn json-key-fn)
+   ;:description "JSON"
+   :content-type "application/json"})
+
 (defn json-req>
   [req]
   (-> req
       (assoc :request-format (json-request-format)
-             :response-format (json-response-format {:keywords? true}))
+             :response-format (json-response-format))
       (req>)))
