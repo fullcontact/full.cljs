@@ -9,7 +9,7 @@
 
   :deploy-repositories [["releases" {:url "https://clojars.org/repo/" :creds :gpg}]]
 
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.48"]
-                 [cljs-ajax "0.3.13"]
-                 [camel-snake-kebab "0.3.2"]])
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojurescript "1.8.40"]
+                 [cljs-ajax "0.5.4"]
+                 [camel-snake-kebab "0.4.0"]])
