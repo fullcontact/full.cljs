@@ -3,8 +3,7 @@
             [camel-snake-kebab.core :refer [->camelCase ->kebab-case-keyword]]
             [ajax.core :refer [ajax-request
                                raw-response-format]]
-            [full.cljs.json :refer [read-json write-json]]
-            [full.cljs.log :as log]))
+            [full.cljs.json :refer [read-json write-json]]))
 
 (defn req>
   [{:keys [url method params headers request-format response-format]
@@ -18,9 +17,11 @@
                    :format request-format
                    :response-format response-format
                    :handler (fn [[ok res]]
-                              (if ok
-                                (put! ch res)
-                                (put! ch (js/Error. res)))
+                              (put! ch (if ok
+                                         {:status 200
+                                          :body res}
+                                         {:status (:status res)
+                                          :body (:response res)}))
                               (close! ch))})
     ch))
 
