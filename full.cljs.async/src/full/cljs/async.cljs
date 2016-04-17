@@ -1,6 +1,6 @@
 (ns full.cljs.async
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [cljs.core.async :refer [chan close! >! <! put! take!]]
+  (:require [cljs.core.async :refer [chan close! >! <! put! take! timeout alts!]]
             [cljs.core.async.impl.protocols :as asyncimpl]))
 
 (defn throw-if-throwable
@@ -60,3 +60,22 @@
           (close! result))))
     result))
 
+(defn debounce>>
+  "Debounces channel. Forwards first item from input channel to output instantly,
+  but then one iteam not more often than every interval ms. If there are more items
+  in between, they are dropped."
+  [ch interval]
+  (let [out (chan)]
+    (go-loop [last-val nil
+              timer (go)]
+      (let [val (if (nil? last-val)
+                  (<! ch)
+                  last-val)]
+        (if (nil? val)
+          (close! out)
+          (let [[new-val ch] (alts! [ch timer])]
+            (-> (condp = ch
+                  timer (do (>! out val) nil)
+                  ch new-val)
+                (recur (timeout interval)))))))
+    out))
