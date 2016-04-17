@@ -66,16 +66,13 @@
   in between, they are dropped."
   [ch interval]
   (let [out (chan)]
-    (go-loop [last-val nil
-              timer (go)]
-      (let [val (if (nil? last-val)
-                  (<! ch)
-                  last-val)]
+    (go-loop [last-val nil]
+      (let [val (or last-val (<! ch))
+            timer (timeout interval)]
         (if (nil? val)
           (close! out)
           (let [[new-val ch] (alts! [ch timer])]
-            (-> (condp = ch
-                  timer (do (>! out val) nil)
-                  ch new-val)
-                (recur (timeout interval)))))))
+            (condp = ch
+              timer (do (>! out val) (recur nil))
+              ch (recur new-val))))))
     out))
