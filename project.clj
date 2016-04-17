@@ -1,4 +1,4 @@
-(defproject fullcontact/full.cljs.parent "0.2.1"
+(defproject fullcontact/full.cljs.parent "0.2.2-SNAPSHOT"
   :description "ClojureScript sugar (full.monty's little brother)."
 
   :url "https://github.com/fullcontact/full.cljs"
