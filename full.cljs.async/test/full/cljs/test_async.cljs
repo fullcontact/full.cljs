@@ -42,3 +42,25 @@
                 (set))
            #{2 3}))
     (done)))
+
+(deftest ^:async go-retry
+  (go
+    (is (= (let [eval-counter- (atom 0)]
+             (<? (go-retry
+                    {:should-retry-fn (fn [res] (= 0 res))
+                     :retries 3}
+                    (swap! eval-counter- inc)
+                    0))
+             @eval-counter-)
+           ; should be 4 (first attempt + 3 retries)
+           4))
+    (is (= (let [eval-counter- (atom 0)]
+             (<? (go-retry
+                   {:should-retry-fn (fn [res] (= 0 res))
+                    :retries 3}
+                   (swap! eval-counter- inc)
+                   1))
+             @eval-counter-)
+           ; should be 1 (no retries)
+           1))
+    (done)))
