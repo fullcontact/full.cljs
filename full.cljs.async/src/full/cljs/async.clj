@@ -25,14 +25,26 @@
   `(go (try ~@body (catch js/Error e# e#))))
 
 (defmacro go-retry
-  [{:keys [retries delay error-fn]
+  "Attempts to evaluate a go block and retries it if `should-retry-fn` which is invoked with block's evaluation result
+  evaluates to false. `should-retry-fn` is optional and by default it will simply check if result is of type js/Error.
+  If the evaluation still fails after given retries, the last failed result will be returned in channel.
+  Parameters:
+  * retries - how many times to retry (default 5 times)
+  * delay - how long to wait in seconds between retries (default 1s)
+  * should-retry-fn - function that is invoked with result of block's evaluation and should indicate whether to retry
+                      (if it returns true) or not (returns false)
+  * error-fn - DEPRECATED, use should-retry-fn instead"
+  [{:keys [retries delay error-fn should-retry-fn]
     :or {error-fn nil, retries 5, delay 1}} & body]
-  `(let [error-fn# ~error-fn]
+  `(let [error-fn# ~error-fn
+         should-retry-fn# (or ~should-retry-fn
+                              (fn [res#]
+                                  (and (instance? js/Error res#)
+                                       (or (not error-fn#) (error-fn# res#)))))]
      (go-loop
        [retries# ~retries]
        (let [res# (try ~@body (catch js/Error e# e#))]
-         (if (and (instance? js/Error res#)
-                  (or (not error-fn#) (error-fn# res#))
+         (if (and (should-retry-fn# res#)
                   (> retries# 0))
            (do
              (cljs.core.async/<! (cljs.core.async/timeout (* ~delay 1000)))
