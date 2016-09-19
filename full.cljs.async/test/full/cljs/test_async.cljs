@@ -1,7 +1,7 @@
 (ns full.cljs.test-async
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cemerick.cljs.test :as t :refer-macros [deftest is done]]
-            [full.cljs.async :refer [pmap>> ] :refer-macros [go-try <? <<? <?*]]
+            [full.cljs.async :refer [pmap>> ] :refer-macros [go-try go-retry <? <<? <?*]]
             [cljs.core.async :refer [chan take! <! >! close!]]))
 
 
