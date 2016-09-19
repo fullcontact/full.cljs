@@ -31,8 +31,7 @@
      (go-loop
        [retries# ~retries]
        (let [res# (try ~@body (catch js/Error e# e#))]
-         (if (and (instance? js/Error res#)
-                  (or (not error-fn#) (error-fn# res#))
+         (if (and (or (not error-fn#) (error-fn# res#))
                   (> retries# 0))
            (do
              (cljs.core.async/<! (cljs.core.async/timeout (* ~delay 1000)))
