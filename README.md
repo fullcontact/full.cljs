@@ -1,3 +1,6 @@
 # full.cljs
 
-ClojureScript Sugar ([full.monty's](https://github.com/fullcontact/full.monty) little brother).
+Things have moved:
+* full.cljs.log -> [full.core.log](https://github.com/fullcontact/full.core/blob/master/src/full/core/log.cljc)
+* full.cljs.json -> [full.json](https://github.com/fullcontact/full.json)
+* full.cljs.http -> removed permanently
